@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accetta la missione</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Comic Neue', 'Comic Sans MS', cursive, sans-serif;
+            overflow: hidden;
+            background-color: #fcf9f2;
+            background-image: linear-gradient(to bottom, rgba(74, 144, 226, 0.15) 2px, transparent 2px);
+            background-size: 100% 50px;
+        }
+
+        button {
+            touch-action: manipulation;
+        }
+
+        /* Schermata password mostrata una sola volta all'apertura */
+        #password-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #fcf9f2;
+            background-image: linear-gradient(to bottom, rgba(74, 144, 226, 0.15) 2px, transparent 2px);
+            background-size: 100% 50px;
+        }
+
+        .password-card {
+            width: min(90vw, 480px);
+            padding: 34px;
+            box-sizing: border-box;
+            text-align: center;
+            background: #ffffff;
+            border: 5px solid #4a90e2;
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(74, 144, 226, 0.25);
+        }
+
+        .password-card h1 {
+            margin: 0 0 22px;
+            color: #2c3e50;
+            font-size: clamp(2rem, 7vw, 3rem);
+        }
+
+        #password-input {
+            width: 100%;
+            min-height: 54px;
+            padding: 10px 14px;
+            box-sizing: border-box;
+            border: 3px solid #b9d7f6;
+            border-radius: 15px;
+            font: 700 1.25rem 'Comic Neue', 'Comic Sans MS', cursive, sans-serif;
+            text-align: center;
+            outline: none;
+        }
+
+        #password-input:focus {
+            border-color: #9b51e0;
+            box-shadow: 0 0 0 4px rgba(155, 81, 224, 0.15);
+        }
+
+        #password-submit {
+            width: 100%;
+            min-height: 52px;
+            margin-top: 16px;
+            border: 0;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #4a90e2, #9b51e0);
+            color: #ffffff;
+            font: 700 1.25rem 'Comic Neue', 'Comic Sans MS', cursive, sans-serif;
+            cursor: pointer;
+        }
+
+        #password-error {
+            min-height: 1.4em;
+            margin: 10px 0 0;
+            color: #c0392b;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        /* Sfondo densamente riempito di disegni, scarabocchi e strumenti scolastici */
+        .decor {
+            position: absolute;
+            font-size: 3rem;
+            opacity: 0.6;
+            user-select: none;
+            z-index: 1;
+            filter: drop-shadow(2px 3px 4px rgba(0,0,0,0.1));
+        }
+        
+        .d1  { top: 18%; left: 18%; transform: rotate(-25deg); }
+        .d2  { top: 5%; left: 35%; transform: rotate(40deg); }
+        .d3  { top: 8%; left: 55%; transform: rotate(-15deg); }
+        .d4  { top: 5%; right: 5%; transform: rotate(20deg); }
+        .d5  { top: 15%; right: 22%; transform: rotate(-45deg); font-size: 2.5rem; }
+        .d6  { top: 6%; right: 40%; transform: rotate(30deg); }
+        .d7  { top: 35%; left: 3%; transform: rotate(55deg); }
+        .d8  { top: 50%; left: 6%; transform: rotate(-40deg); font-size: 3.5rem; }
+        .d9  { top: 65%; left: 2%; transform: rotate(15deg); }
+        .d10 { top: 32%; right: 4%; transform: rotate(-20deg); }
+        .d11 { top: 52%; right: 6%; transform: rotate(45deg); font-size: 3.2rem; }
+        .d12 { top: 68%; right: 3%; transform: rotate(-30deg); }
+        .d13 { bottom: 6%; left: 15%; transform: rotate(-10deg); }
+        .d14 { bottom: 10%; left: 32%; transform: rotate(25deg); }
+        .d15 { bottom: 5%; left: 50%; transform: rotate(-35deg); font-size: 2.8rem; }
+        .d16 { bottom: 8%; right: 20%; transform: rotate(18deg); }
+        .d17 { bottom: 5%; right: 40%; transform: rotate(-55deg); }
+
+        /* Bottoncino Casetta in alto a sinistra */
+        #btn-home {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            z-index: 100;
+            background: #ffffff;
+            border: 3px solid #4a90e2;
+            color: #4a90e2;
+            font-size: 1.8rem;
+            width: 55px;
+            height: 55px;
+            border-radius: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+        #btn-home:hover {
+            background: #4a90e2;
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+
+        /* Post-it verticale a destra, diviso in quattro aree tematiche */
+        #postit-domande {
+            display: none;
+            position: absolute;
+            right: 35px;
+            top: 30px;
+            bottom: 30px;
+            width: 350px;
+            background: #ffffff;
+            border: 2px solid #d7c96a;
+            border-radius: 10px;
+            padding: 8px;
+            box-shadow: 5px 5px 20px rgba(0,0,0,0.15);
+            z-index: 50;
+            overflow: hidden;
+            transform: rotate(1deg);
+            flex-direction: column;
+        }
+
+        .postit-title {
+            margin: 0;
+            padding: 8px 10px 10px;
+            background: #fff5a8;
+            color: #243447;
+            text-align: center;
+            font-size: 1.35rem;
+            letter-spacing: 0.06em;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .postit-section {
+            flex: 1 1 auto;
+            min-height: 0;
+            padding: clamp(6px, 1vh, 10px) 13px;
+            color: #26384a;
+        }
+
+        .postit-section:first-of-type { border-radius: 0; }
+        .postit-section:last-child { border-radius: 0 0 5px 5px; }
+
+        .postit-personaggi { background: #ffe49a; }
+        .postit-ambiente { background: #bfe8d0; }
+        .postit-sviluppo { background: #bcdcf7; }
+        .postit-revisione { background: #e5c9f2; }
+
+        .postit-section h3 {
+            margin: 0 0 clamp(4px, 0.7vh, 7px);
+            font-size: clamp(1rem, 2vh, 1.15rem);
+            color: #243447;
+            text-align: center;
+            letter-spacing: 0.04em;
+        }
+
+        .postit-section p {
+            margin: clamp(2px, 0.55vh, 5px) 0;
+            font-size: clamp(0.84rem, 1.9vh, 0.98rem);
+            line-height: 1.32;
+        }
+
+        /* Contenitore principale */
+        .container {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            width: 55%;
+            max-width: 650px;
+            margin-right: 370px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #start-screen {
+            display: flex;
+            position: fixed;
+            inset: 0;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+            z-index: 20;
+        }
+
+        #btn-mission {
+            background: linear-gradient(135deg, #4a90e2, #9b51e0);
+            color: white;
+            font-size: 3.2rem;
+            font-family: 'Comic Neue', 'Comic Sans MS', cursive, sans-serif;
+            font-weight: 700;
+            padding: 35px 70px;
+            border: 5px solid #ffffff;
+            border-radius: 35px;
+            box-shadow: 0 15px 35px rgba(74, 144, 226, 0.4);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        #btn-mission:hover {
+            transform: scale(1.04);
+            box-shadow: 0 20px 40px rgba(155, 81, 224, 0.5);
+        }
+
+        #btn-mission:active {
+            transform: scale(0.98);
+        }
+
+        #phrase-box {
+            display: none;
+            background: #ffffff;
+            border: 5px solid #4a90e2;
+            border-radius: 30px;
+            padding: 40px 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15), 0 0 0 10px rgba(255, 255, 255, 0.9);
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        #phrase-text {
+            font-size: 2.4rem;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            line-height: 1.4;
+            font-weight: 700;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            color: white;
+            font-size: 1.4rem;
+            font-family: 'Comic Neue', 'Comic Sans MS', cursive, sans-serif;
+            font-weight: 700;
+            padding: 12px 22px;
+            border: 3px solid #ffffff;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            transition: all 0.2s ease;
+        }
+
+        .btn-action:hover {
+            transform: scale(1.05);
+        }
+
+        #btn-back { background: #4a90e2; }
+        #btn-toggle-timer { background: #8e44ad; }
+
+        /* Stili per il Timer Visivo Circolare */
+        #timer-container {
+            display: none;
+            margin-top: 25px;
+            background: linear-gradient(135deg, #e6f5ff 0%, #e8f8ed 52%, #fff0dc 100%);
+            border: 3px dashed #57a9df;
+            border-radius: 20px;
+            padding: 15px;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .timer-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .timer-select-group {
+            display: flex;
+            gap: 5px;
+        }
+
+        .timer-btn {
+            background: linear-gradient(135deg, #78c8f4, #2d8fd5);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-family: 'Comic Neue', 'Comic Sans MS', cursive, sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        .timer-btn:nth-child(2) { background: linear-gradient(135deg, #5bb8ec, #287fc1); }
+        .timer-btn:nth-child(3) { background: linear-gradient(135deg, #75cf99, #27935c); }
+        .timer-btn:nth-child(4) { background: linear-gradient(135deg, #55bd82, #1f7f50); }
+        .timer-btn:nth-child(5) { background: linear-gradient(135deg, #ffc56f, #ed861d); }
+        .timer-btn:hover { filter: brightness(0.92); }
+        .timer-btn.active {
+            outline: 3px solid #ffffff;
+            box-shadow: 0 0 0 2px #2c3e50;
+        }
+
+        .timer-action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .t-act-btn {
+            background: linear-gradient(135deg, #55bde8, #45b978, #ef9a3d);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-family: 'Comic Neue', 'Comic Sans MS', cursive, sans-serif;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .t-act-btn:hover { filter: brightness(0.92); }
+
+        /* Cerchio SVG del timer */
+        .timer-circle-wrapper {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .timer-svg {
+            transform: rotate(-90deg);
+            width: 90px;
+            height: 90px;
+        }
+
+        .timer-path-base {
+            fill: none;
+            stroke: #dcecf0;
+            stroke-width: 8;
+        }
+
+        .timer-path-progress {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s linear, stroke 0.5s ease;
+        }
+
+        #timer-text {
+            position: absolute;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        /* Tablet orizzontali e schermi intermedi */
+        @media (max-width: 1100px) {
+            #postit-domande {
+                right: 18px;
+                width: 300px;
+            }
+
+            .container {
+                width: calc(100% - 360px);
+                margin-right: 330px;
+                padding: 16px;
+            }
+
+            .postit-section p {
+                font-size: clamp(0.82rem, 1.75vh, 0.94rem);
+                line-height: 1.3;
+            }
+
+            #phrase-text {
+                font-size: clamp(1.55rem, 3vw, 2.15rem);
+            }
+
+            .btn-action {
+                font-size: 1.1rem;
+                padding: 10px 16px;
+                min-height: 44px;
+            }
+        }
+
+        /* Tablet verticali e telefoni: contenuti impilati e scorrevoli */
+        @media (max-width: 800px) {
+            body {
+                min-height: 100vh;
+                min-height: 100dvh;
+                height: auto;
+                overflow-x: hidden;
+                overflow-y: auto;
+                flex-direction: column;
+                justify-content: flex-start;
+            }
+
+            #btn-home {
+                position: fixed;
+                top: 12px;
+                left: 12px;
+                width: 48px;
+                height: 48px;
+                font-size: 1.5rem;
+            }
+
+            #start-screen {
+                min-height: 100vh;
+                min-height: 100dvh;
+                overflow-y: auto;
+            }
+
+            #btn-mission {
+                max-width: min(92vw, 560px);
+                font-size: clamp(2rem, 8vw, 3rem);
+                padding: clamp(22px, 6vw, 34px) clamp(24px, 9vw, 58px);
+            }
+
+            .container {
+                order: 1;
+                width: 100%;
+                max-width: none;
+                margin: 0;
+                padding: 76px 14px 14px;
+                box-sizing: border-box;
+            }
+
+            #phrase-box {
+                padding: 28px 18px;
+                border-width: 4px;
+                border-radius: 22px;
+            }
+
+            #phrase-text {
+                font-size: clamp(1.35rem, 5.5vw, 2rem);
+                margin-bottom: 22px;
+            }
+
+            #postit-domande {
+                position: relative;
+                order: 2;
+                inset: auto;
+                width: calc(100% - 28px);
+                max-width: 620px;
+                max-height: none;
+                margin: 0 auto 24px;
+                box-sizing: border-box;
+                overflow: hidden;
+                transform: none;
+            }
+
+            .postit-section p {
+                font-size: 1rem;
+                line-height: 1.42;
+            }
+
+            #timer-container {
+                flex-wrap: wrap;
+            }
+
+            .timer-select-group,
+            .timer-action-btns {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .timer-btn,
+            .t-act-btn {
+                min-height: 44px;
+            }
+
+            .decor {
+                opacity: 0.3;
+            }
+        }
+
+        /* Telefoni molto stretti */
+        @media (max-width: 420px) {
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn-action {
+                width: 100%;
+            }
+
+            .timer-controls {
+                width: 100%;
+            }
+
+            .timer-select-group {
+                gap: 7px;
+            }
+
+            .timer-btn {
+                flex: 1 1 52px;
+            }
+        }
+
+        /* Telefoni in orizzontale con altezza ridotta */
+        @media (max-height: 500px) and (orientation: landscape) {
+            #start-screen {
+                justify-content: flex-start;
+                padding-top: 24px;
+                padding-bottom: 24px;
+            }
+
+            #btn-mission {
+                font-size: 2rem;
+                padding: 18px 34px;
+            }
+        }
+
+        /* Schermi larghi ma poco alti: tutto il post-it resta visibile */
+        @media (min-width: 801px) and (max-height: 700px) {
+            #postit-domande {
+                top: 12px;
+                bottom: 12px;
+                padding: 5px;
+            }
+
+            .postit-title {
+                padding: 5px 8px 6px;
+                font-size: 1.05rem;
+            }
+
+            .postit-section {
+                padding: 4px 10px;
+            }
+
+            .postit-section h3 {
+                margin-bottom: 2px;
+                font-size: 0.92rem;
+            }
+
+            .postit-section p {
+                margin: 1px 0;
+                font-size: 0.78rem;
+                line-height: 1.18;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Accesso iniziale: resta sbloccato per tutta la sessione corrente -->
+    <div id="password-screen">
+        <form class="password-card" onsubmit="verificaPassword(event)">
+            <h1>PASSWORD:</h1>
+            <input id="password-input" type="password" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Inserisci la password" autofocus>
+            <button id="password-submit" type="submit">ENTRA</button>
+            <p id="password-error" role="alert" aria-live="polite"></p>
+        </form>
+    </div>
+
+    <!-- Bottoncino Casetta sempre visibile -->
+    <div id="btn-home" onclick="tornaHome()" title="Torna alla Home">🏠</div>
+
+    <!-- Post-it con le domande spunto, diviso in quattro sezioni -->
+    <div id="postit-domande">
+        <h2 class="postit-title">SUGGERIMENTI</h2>
+        <section class="postit-section postit-personaggi">
+            <h3>PERSONAGGI</h3>
+            <p><strong>Aspetto esteriore:</strong> occhi, capelli, modo di parlare e muoversi, stile...</p>
+            <p><strong>Mondo interiore:</strong> carattere e passioni. Cosa odia? Cosa ama? Cosa pensa?</p>
+            <p><strong>Ruolo in società:</strong> professione, età...</p>
+        </section>
+        <section class="postit-section postit-ambiente">
+            <h3>AMBIENTE</h3>
+            <p>È giorno, notte, crepuscolo...</p>
+            <p>Dove ci si trova?</p>
+            <p>Cosa si può vedere? Annusare? Ascoltare?</p>
+            <p>Cosa accade intorno?</p>
+        </section>
+        <section class="postit-section postit-sviluppo">
+            <h3>SVILUPPO</h3>
+            <p>Cosa è successo prima?</p>
+            <p>Cosa succede dopo?</p>
+            <p>Qual è il cuore della storia?</p>
+        </section>
+        <section class="postit-section postit-revisione">
+            <h3>REVISIONE</h3>
+            <p>Ci sono errori ortografici?</p>
+            <p>Ripetizioni? Posso usare dei sinonimi?</p>
+            <p>Ho usato bene la punteggiatura?</p>
+            <p>Posso aggiungere descrizioni o eventi?</p>
+        </section>
+    </div>
+
+    <!-- Sfondo denso e ricoperto di disegni, strumenti e scarabocchi -->
+    <div class="decor d1"> ✏️ </div>
+    <div class="decor d2"> 🌀 </div>
+    <div class="decor d3"> ✒️ </div>
+    <div class="decor d4"> 🖍️ </div>
+    <div class="decor d5"> 〰️ </div>
+    <div class="decor d6"> 🖌️ </div>
+    <div class="decor d7"> 🌀 </div>
+    <div class="decor d8"> 📏 </div>
+    <div class="decor d9"> 🔵 </div>
+    <div class="decor d10"> 📐 </div>
+    <div class="decor d11"> 〰️ </div>
+    <div class="decor d12"> 🖊️ </div>
+    <div class="decor d13"> ✂️ </div>
+    <div class="decor d14"> 🟣 </div>
+    <div class="decor d15"> 🌀 </div>
+    <div class="decor d16"> ✏️ </div>
+    <div class="decor d17"> 🟢 </div>
+
+    <div class="container">
+        <!-- Schermata Iniziale -->
+        <div id="start-screen">
+            <button id="btn-mission" onclick="mostraFrase()">Accetta la missione</button>
+        </div>
+
+        <!-- Schermata Frase -->
+        <div id="phrase-box">
+            <div id="phrase-text">Qui apparirà la frase...</div>
+            
+            <div class="button-group">
+                <button id="btn-back" class="btn-action" onclick="mostraFrase()">Altra Missione</button>
+                <button id="btn-toggle-timer" class="btn-action" onclick="toggleTimerBox()">⏱️ Timer</button>
+            </div>
+
+            <!-- Timer Visivo Integrato -->
+            <div id="timer-container">
+                <div class="timer-circle-wrapper">
+                    <svg class="timer-svg" viewBox="0 0 100 100">
+                        <circle class="timer-path-base" cx="50" cy="50" r="42"></circle>
+                        <circle id="timer-progress" class="timer-path-progress" cx="50" cy="50" r="42" style="stroke-dasharray: 264; stroke-dashoffset: 0; stroke: #2ecc71;"></circle>
+                    </svg>
+                    <div id="timer-text">05:00</div>
+                </div>
+                <div class="timer-controls">
+                    <div class="timer-select-group">
+                        <button class="timer-btn" onclick="impostaTempo(5)">5m</button>
+                        <button class="timer-btn" onclick="impostaTempo(10)">10m</button>
+                        <button class="timer-btn" onclick="impostaTempo(15)">15m</button>
+                        <button class="timer-btn" onclick="impostaTempo(20)">20m</button>
+                        <button class="timer-btn" onclick="impostaTempo(30)">30m</button>
+                    </div>
+                    <div class="timer-action-btns">
+                        <button class="t-act-btn" id="btn-start-pause" onclick="avviaPausaTimer()">Avvia</button>
+                        <button class="t-act-btn" onclick="resetTimer()">Reset</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tutteLeFrasi = [
+            "Mentre sei sulla battigia, noti che le onde stanno trascinando a riva una bottiglia di vetro con un messaggio all'interno...",
+            "Una coppia attira la tua attenzione: un anziano passa furtivamente un piccolo orologio da taschino ad un'altra persona. Cosa sta succedendo?",
+            "Tutte le case del Paese di Aghsghejlt sono dipinte di grigio, tranne una che ha l'intonaco verde. Perché? Di chi è quella casa?",
+            "Il campanello suona da un quarto d'ora, finalmente ti alzi, vai verso la porta e...",
+            "La tua migliore amica si è trasferita in un'altra città, ma la prima lettera che ti invia è un po' strana. Dentro la busta ci sono solo tre fotografie: una luna piena, la pagina strappata di un libro, un'altalena. Cosa significa? Cosa farai?",
+            "La gita di inizio anno è sempre estremamente noiosa, ma tre studenti si ritrovano all'improvviso davanti a un oggetto curioso: un uovo d'oro. L'uovo, però, si sta schiudendo e...",
+            "Lei sta tornando da scuola, ma mentre sta per attraversare la strada, le persone si bloccano improvvisamente. Il tempo si è fermato.",
+            "-Ecco! - esclama la tua guida. -Qui è dove finisce l'arcobaleno, incredibile no?-",
+            "Ti svegli, ma dopo qualche minuto e un sonoro sbadiglio, ti rendi conto che hai già vissuto questa giornata.",
+            "Hai la posibilità di viaggiare avanti o indietro nel tempo, ma potrai farlo sola una volta, cosa fai?",
+            "Scrivi le prime 5 parole che ti vengono in mente. Ora passale al tuo compagno di banco, dovrà scrivere una storia con quelle parole.",
+            "Hai un personaggio che inizia con la D. Un oggetto che inizia con la E. Un luogo che inizia con la F. Scrivi la tua storia.",
+            "Hai un personaggio che inizia con la G. Un oggetto che inizia con la I. Un luogo che inizia con la L. Scrivi la tua storia.",
+            "Hai un personaggio che inizia con la M. Un oggetto che inizia con la N. Un luogo che inizia con la O. Scrivi la tua storia.",
+            "Hai un personaggio che inizia con la P. Un oggetto che inizia con la R. Un luogo che inizia con la S. Scrivi la tua storia.",
+            "Hai un personaggio che inizia con la T. Un oggetto che inizia con la U. Un luogo che inizia con la V. Scrivi la tua storia.",
+            "Hai un personaggio che inizia con la L. Un oggetto che inizia con la P. Un luogo che inizia con la Z. Scrivi la tua storia.",
+            "Guarda il tuo banco. Il primo oggetto che vedi è il protagonista della tua storia.",
+            "Dopo anni di ricerca, due astronauti sbarcano finalmente su un pianeta lontano, ma...",
+            "Durante un trasloco, il protagonista trova una piccola porta nascosta dietro a un pianoforte.",
+            "Hai ottenuto un superpotere, ma qualcosa non funziona...",
+            "La ricerca è stata estenuante, ma alla fine è riuscito a trovare...",
+            "Hai criticato ad alta voce una persona che conosci, ma la pianta sul tuo comodino non è d'accordo e inizia a spiegarti perché.",
+            "Stai per uscire di casa, in ritardo per la scuola, quando una voce alle tue spalle grida: -Aspetta! Hai dimenticato la merenda!- A parlare, però, è stato il tuo cane.",
+            "Il mondo sta finendo, ma tu hai la soluzione. Il tuo colore preferito salverà il mondo, spiega come e perché.",
+            "Lui ha perso l'unica cosa che avrebbe potuto riportarlo a casa.",
+            "Per sbaglio, il postino ha consegnato a te un pacco destinato al vicino.",
+            "Scrivi una lettera per convincere il tuo migliore amico a leggere un libro che odia.",
+            "Scrivi la recensione di un'opera d'arte: sii convincente, perché le persone dovrebbero assolutamente andare a vederla?",
+            "Scrivi 5 cose che ti rendono felice. Ora immagina che una di queste cose sia improvvisamente sparita dal mondo, cosa accade?",
+            "Pensa a una cosa che ti fa arrabbiare: Luigi è arrabbiato proprio per quella cosa, cerca di calmarlo spiegandogli come potrebbe gestire le sue emozioni.",
+            "Inventa la trama di un film. Attenzione! La scena iniziale è l'inquadratura del ristorante dell'Ikea.",
+            "Sposti finalmente quell'ingombrante libreria che occupa una parete della tua stanza, ma dietro c'è qualcosa che non ti saresti mai aspettato.",
+            "Una caviglia rotta e tanto tempo a disposizione. Internet, però, non funziona.",
+            "Descrivi gli occhi di una persona, ma utilizza almeno due figure retoriche. Ora descrivi gli occhi di un animale, utilizzando altre due figure retoriche. La persona e l'animale si conoscono? Racconta.",
+            "Scrivi una breve storia, la cui ultima frase sia 'E questo, infine, è la dimostrazione di quanto mi sia sbagliato/a fin dall'inizio.'",
+            "Scrivi una breve storia, la cui ultima frase sia 'E questo, infine, è la dimostrazione di quanto abbia sempre avuto ragione.'",
+            "Scegli il titolo di un film e cambiane una parola: qual è la trama di questa nuova storia?",
+            "Scegli il titolo di un libro e cambiane una parola: qual è la trama di questa nuova storia?",
+            "Scegli il titolo di un videogioco o di una serie tv e cambiane una parola: qual è la trama di questa nuova storia?",
+            "Improvvisamente ti ritrovi in un pianta sconosciuto, con abitanti che non parlano la tua lingua e hanno usi e costumi diversi dai tuoi. Come è successo e cosa farai?",
+            "Tre parole per una storia: parco - cielo - scarpa",
+            "Tre parole per una storia: linea - smalto - fiducia",
+            "Tre parole per una storia: verità - acqua - stelle",
+            "In classe, qualcosa si è mosso senza che nessuno lo toccasse. Cosa sta succedendo?",
+        ];
+
+        let frasiUsateSessione = [];
+
+        // Variabili per il Timer
+        let timerSecondiTotali = 300; // Default 5 minuti (5 * 60)
+        let timerSecondiRimanenti = 300;
+        let timerIntervallo = null;
+        let timerAttivo = false;
+        const circonferenzaCerchio = 2 * Math.PI * 42; // Raggio r=42
+
+        function verificaPassword(event) {
+            event.preventDefault();
+            const input = document.getElementById('password-input');
+            const errore = document.getElementById('password-error');
+
+            if (input.value.trim().toUpperCase() === 'SOGNARE') {
+                document.getElementById('password-screen').style.display = 'none';
+                errore.innerText = '';
+            } else {
+                errore.innerText = 'Password non corretta. Riprova.';
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        function mostraFrase() {
+            let disponibili = tutteLeFrasi.map((_, i) => i).filter(i => !frasiUsateSessione.includes(i));
+            
+            if (disponibili.length === 0) {
+                frasiUsateSessione = [];
+                disponibili = tutteLeFrasi.map((_, i) => i);
+                alert("Hai completato l'intero archivio! Il gioco ricomincia da capo.");
+            }
+            
+            const randomIndex = Math.floor(Math.random() * disponibili.length);
+            const indiceOriginale = disponibili[randomIndex];
+            
+            frasiUsateSessione.push(indiceOriginale);
+
+            document.getElementById('phrase-text').innerText = tutteLeFrasi[indiceOriginale];
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('phrase-box').style.display = 'block';
+            document.getElementById('postit-domande').style.display = 'flex';
+
+            aggiornaGraficaTimer();
+        }
+
+        function tornaHome() {
+            fermaTimer();
+            document.getElementById('phrase-box').style.display = 'none';
+            document.getElementById('postit-domande').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+            document.getElementById('timer-container').style.display = 'none';
+        }
+
+        // Funzioni di gestione del Timer Visivo
+        function toggleTimerBox() {
+            const container = document.getElementById('timer-container');
+            if (container.style.display === 'none' || container.style.display === '') {
+                container.style.display = 'flex';
+            } else {
+                container.style.display = 'none';
+                fermaTimer();
+            }
+        }
+
+        function impostaTempo(minuti) {
+            fermaTimer();
+            timerSecondiTotali = minuti * 60;
+            timerSecondiRimanenti = timerSecondiTotali;
+            aggiornaGraficaTimer();
+        }
+
+        function aggiornaGraficaTimer() {
+            const min = Math.floor(timerSecondiRimanenti / 60);
+            const sec = timerSecondiRimanenti % 60;
+            document.getElementById('timer-text').innerText = 
+                String(min).padStart(2, '0') + ":" + String(sec).padStart(2, '0');
+
+            const cerchio = document.getElementById('timer-progress');
+            const progresso = timerSecondiRimanenti / timerSecondiTotali;
+            const offset = circonferenzaCerchio - (progresso * circonferenzaCerchio);
+            cerchio.style.strokeDashoffset = offset;
+
+            // Logica dinamica dei colori:
+            // - Ultimi 2 minuti (120 secondi o meno): Arancione / Giallo-arancio
+            // - Metà tempo (oltre 120s fino a metà durata): Blu / Azzurro
+            // - Prima metà: Verde
+            if (timerSecondiRimanenti <= 120) {
+                cerchio.style.stroke = "#f39c12"; // Arancione
+            } else {
+                const metaDurata = timerSecondiTotali / 2;
+                if (timerSecondiRimanenti > metaDurata && timerSecondiTotali > 120) {
+                    cerchio.style.stroke = "#2ecc71"; // Verde
+                } else {
+                    cerchio.style.stroke = "#3498db"; // Blu/Azzurro
+                }
+            }
+        }
+
+        function avviaPausaTimer() {
+            const btn = document.getElementById('btn-start-pause');
+            if (!timerAttivo) {
+                if (timerSecondiRimanenti <= 0) {
+                    timerSecondiRimanenti = timerSecondiTotali;
+                }
+                timerAttivo = true;
+                btn.innerText = "Pausa";
+                btn.style.background = "linear-gradient(135deg, #ffc56f, #e67e22)";
+
+                timerIntervallo = setInterval(() => {
+                    if (timerSecondiRimanenti > 0) {
+                        timerSecondiRimanenti--;
+                        aggiornaGraficaTimer();
+                    } else {
+                        fermaTimer();
+                        alert("Tempo scaduto!");
+                    }
+                }, 1000);
+            } else {
+                fermaTimer();
+            }
+        }
+
+        function fermaTimer() {
+            clearInterval(timerIntervallo);
+            timerAttivo = false;
+            const btn = document.getElementById('btn-start-pause');
+            if (btn) {
+                btn.innerText = "Avvia";
+                btn.style.removeProperty('background');
+            }
+        }
+
+        function resetTimer() {
+            fermaTimer();
+            timerSecondiRimanenti = timerSecondiTotali;
+            aggiornaGraficaTimer();
+        }
+    </script>
+</body>
+</html>
